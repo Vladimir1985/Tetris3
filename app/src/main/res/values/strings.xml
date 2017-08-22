@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Tetris</string>
+    <string name="menu_newgame">Новая игра</string>
+</resources>
