@@ -32,4 +32,9 @@ public class Player {
     {
         return score;
     }
+
+    public void SetScore(int i)
+    {
+        score=i;
+    }
 }

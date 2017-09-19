@@ -37,7 +37,18 @@ public class LogicMachine
     public int countFigures=3;
     //Массив следующих трех фигур которые выпадут
     public int[]figures=new int[countFigures];
-
+   //Вернуть ширину игрового поля
+    public int GetWidth()
+    {
+        return  GameWidth;
+    }
+    //Вернуть высоту игрового поля
+    public int GetHeigth()
+    {
+        return  GameHeight;
+    }
+//Тип текущего объекта
+public int currentFigure;
     public  LogicMachine(Context current)
     {
         this.context=current;
@@ -66,6 +77,24 @@ public class LogicMachine
         int i = rand.nextInt(7);
         return  i;
     }
+
+    //Создаем заданный объект
+    public boolean CreateObject(int i)
+    {
+        switch (i)
+        {
+            case 0:currentObject=new CubeObject();break;
+            case 1:currentObject=new StraightObject();break;
+            case 2:currentObject=new TObject();break;
+            case 3:currentObject=new RAngleObject();break;
+            case 4:currentObject=new LAngleObject();break;
+            case 5:currentObject=new LZObject();break;
+            case 6:currentObject=new RZObject();break;
+            default:break;
+        }
+        return true;
+    }
+    //Создаем случайный объект
     public boolean CreateObject()
     {
 
@@ -81,7 +110,8 @@ public class LogicMachine
             case 6:currentObject=new RZObject();break;
             default:break;
         }
-
+        //Номер текущей фигуры
+    currentFigure=figures[0];
 
         //Сдвигаем массив предсказанных фигур на 1 элемент "влево"
         for (int i = 0; i <figures.length-1; i++)
@@ -94,8 +124,12 @@ public class LogicMachine
     }
 
     public int GetScore()
+{
+    return player.GetScore();
+}
+    public void SetScore(int score)
     {
-        return player.GetScore();
+        player.SetScore(score);
     }
     //Обнуляет ячейки игрового поля в которых находится текущая фигура
     void ClearObjectOnPlane()

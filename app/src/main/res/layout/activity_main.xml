@@ -30,7 +30,7 @@
         android:layout_marginRight="8dp"
         android:layout_marginTop="50dp"
         android:layout_weight="1.04"
-        android:onClick="ThreadTest"
+        android:onClick="ContinueGame"
         android:text="Продолжить игру"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

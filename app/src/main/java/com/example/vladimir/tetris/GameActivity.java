@@ -1,6 +1,7 @@
 package com.example.vladimir.tetris;
 
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -11,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -21,6 +23,13 @@ import android.widget.TextView;
 import com.example.vladimir.logic.LogicMachine;
 import com.example.vladimir.visual.*;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
 public class GameActivity extends AppCompatActivity {
 
@@ -35,17 +44,33 @@ public class GameActivity extends AppCompatActivity {
     private Handler handler = new Handler();
 AnimationDrawable gameover_animation;
     ImageView anim_gameover;
+    //Имя файла в который сохраняем
+    String filename = "save";
+
+    private static final String LOG_TAG = "my_tag";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-        playerScore=(TextView)findViewById(R.id.score);
+        Context context=this;
+        //Извлекаем ключ переданный нам через intent, если он равен 1 значит мы создаем новую игру
+        //Если равен 2, то загружаем сохраненную игру
+        Bundle bundle = getIntent().getExtras();
+        int bundleValue=0;
+        if(bundle!=null)
+            bundleValue=bundle.getInt("key");
+
         try {
+            playerScore=(TextView)findViewById(R.id.score);
             canvasView=(DrawCanvasTimer)findViewById(R.id.customview);
             //Создаем перехватчик событий и присваиваем его нашему канвасу
             GameActivity.TListener tl = new GameActivity.TListener();
             canvasView.setOnTouchListener(tl);
+
+
 
             //Включение анимации GameOver
            // anim_gameover=(ImageView)findViewById(R.id.anim_gameover);
@@ -57,18 +82,131 @@ AnimationDrawable gameover_animation;
 //                ((Animatable)drawable).start();
 
             logic = new LogicMachine(this);
-            //Создание нового объекта
-            boolean b=logic.CreateObject();
-            canvasView.UpdatePlane(logic.gamePlanel);
-            canvasView.postInvalidate();
-            //Задаем нашим ImageView картинки сгенерированных объектов
-            SetPredictedFigures();
+            switch (bundleValue)
+            {
+                case 1:
+                    StartNewGame();
+                    break;
+                case 2:
+                    String s=LoadDataFromFile();
+                    if(s=="")
+                        StartNewGame();
+                    else
+                        ContinueGame(s);
+                    break;
+
+
+            }
+
             //Создание таймера с заданной скоростью
             handler.postDelayed(runnable, startSpeedMs);
         }catch (Exception e)
         {
             int y=0;
         }
+    }
+void ContinueGame(String lastGameData)
+{
+    //Разбиваем строку по нашему разделителю
+    String[] separated =  lastGameData.split("&");
+    //Первая группа данных это данные о состоянии нашего игрового поля, заносим их в матрицу
+    for(int i=0;i<logic.GetHeigth();i++)
+        for (int j = 0; j < logic.GetWidth(); j++)
+        {
+            if(separated[0].charAt(logic.GetWidth()*i+j)=='1')
+                logic.gamePlanel[j][i]=true;
+            else
+                logic.gamePlanel[j][i]=false;
+        }
+
+    //Записываем данные о предсказанных фигурах
+    for(int i=0;i<logic.figures.length;i++)
+        logic.figures[i]=Integer.parseInt(separated[1+i]);
+
+    //Сохраняем очки пользователя
+    logic.SetScore(Integer.parseInt(separated[4]));
+    //Сохраняем текущую фигуру
+    logic.CreateObject(Integer.parseInt(separated[5]));
+
+}
+
+    void StartNewGame()
+    {
+        boolean b = logic.CreateObject();
+        canvasView.UpdatePlane(logic.gamePlanel);
+        canvasView.postInvalidate();
+        //Задаем нашим ImageView картинки сгенерированных объектов
+        SetPredictedFigures();
+    }
+
+    //При выходе из текущего активити сохраняем данные игры
+    @Override
+    public void onBackPressed() {
+
+
+        //Строка в которую записываем сохраняемые данные
+        String out = "";
+        //Переносим данные о состоянии игрового поля со всеми фигурами
+        for(int i=0;i<logic.GetHeigth();i++)
+            for (int j = 0; j < logic.GetWidth(); j++)
+            {
+                if(logic.gamePlanel[j][i])
+                    out+='1';
+                else
+                    out+='0';
+            }
+
+        //Записываем разделительные знаки, они делят строку данных на отдельные блоки
+        out+='&';
+        //Записываем данные о предсказанных фигурах
+        for(int i=0;i<logic.figures.length;i++)
+            out += String.valueOf(logic.figures[i])+'&';
+        //Сохраняем очки пользователя
+        out+=String.valueOf(logic.GetScore())+'&';
+        //Сохраняем текущую фигуру
+        out+=String.valueOf(logic.currentFigure);
+        File file=new File(this.getFilesDir(),filename);
+
+        //Выходной поток
+        FileOutputStream outputStream;
+        //Запись данных
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(out.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finish();
+        return;
+    }
+
+    String LoadDataFromFile()
+    {
+    FileInputStream stream = null;
+    StringBuilder sb = new StringBuilder();
+    String line;
+
+        try {
+        stream = openFileInput(filename);
+
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        } finally {
+            stream.close();
+        }
+
+        Log.d(LOG_TAG, "Data from file: " + sb.toString());
+
+    } catch (Exception e) {
+
+        Log.d(LOG_TAG, "Файла нет или произошла ошибка при чтении");
+            return "";
+    }
+    return sb.toString();
     }
     //Передаем в функцию наши внутренние иден.номера фигур, соответственно ним возвращаем id номера изображений этих фигур
     int GetImageNum(int a)
@@ -144,6 +282,8 @@ AnimationDrawable gameover_animation;
         }
     };
 
+
+
     //Позиция нажатия на экран по оси X
     float LastPointX=0;
     //Переменные для обрабативания двойного нажатия
@@ -211,6 +351,10 @@ AnimationDrawable gameover_animation;
             return true;
         }
 
+
+
     }
+
+
 
 }
