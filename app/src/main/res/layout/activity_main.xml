@@ -44,11 +44,11 @@
         android:layout_marginRight="8dp"
         android:layout_marginTop="50dp"
         android:layout_weight="1"
-        android:onClick="ThreadTest"
+        android:onClick="ScoreList"
         android:text="Таблица рекордов"
+        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button3"
-        app:layout_constraintHorizontal_bias="0.502" />
+        app:layout_constraintTop_toBottomOf="@+id/button3" />
 
 </android.support.constraint.ConstraintLayout>

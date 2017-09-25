@@ -1,35 +1,29 @@
 package com.example.vladimir.tetris;
 
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.drawable.Animatable;
-import android.graphics.drawable.AnimationDrawable;
 
-import android.graphics.drawable.Drawable;
+import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.example.vladimir.logic.LogicMachine;
+import com.example.vladimir.logic.SQLWorker;
 import com.example.vladimir.visual.*;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+
 
 public class GameActivity extends AppCompatActivity {
 
@@ -48,7 +42,7 @@ AnimationDrawable gameover_animation;
     String filename = "save";
 
     private static final String LOG_TAG = "my_tag";
-
+    SQLWorker sqw=new SQLWorker(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -88,11 +82,11 @@ AnimationDrawable gameover_animation;
                     StartNewGame();
                     break;
                 case 2:
-                    String s=LoadDataFromFile();
-                    if(s=="")
+                   //String s=LoadDataFromFile();
+                    if(!sqw.CheckDB())
                         StartNewGame();
                     else
-                        ContinueGame(s);
+                        ContinueGame();
                     break;
 
 
@@ -105,8 +99,32 @@ AnimationDrawable gameover_animation;
             int y=0;
         }
     }
+
+    void ContinueGame()
+    {
+        String BF=sqw.ReadBF();
+        for(int i=0;i<logic.GetHeigth();i++)
+            for (int j = 0; j < logic.GetWidth(); j++)
+            {
+                if(BF.charAt(logic.GetWidth()*i+j)=='1')
+                    logic.gamePlanel[j][i]=true;
+                else
+                    logic.gamePlanel[j][i]=false;
+            }
+
+        int []f=sqw.ReadFigures(logic.GetFigures().length);
+        logic.SetFigures(f);
+
+        logic.player.SetScore(sqw.ReadScore());
+
+        logic.CreateObject(sqw.ReadFigureNum());
+        logic.GetCurrentObject().SetObjectCoord(sqw.ReadCoord());
+
+    }
 void ContinueGame(String lastGameData)
 {
+
+
     //Разбиваем строку по нашему разделителю
     String[] separated =  lastGameData.split("&");
     //Первая группа данных это данные о состоянии нашего игрового поля, заносим их в матрицу
@@ -120,14 +138,20 @@ void ContinueGame(String lastGameData)
         }
 
     //Записываем данные о предсказанных фигурах
-    for(int i=0;i<logic.figures.length;i++)
-        logic.figures[i]=Integer.parseInt(separated[1+i]);
+    for(int i=0;i<logic.GetFigures().length;i++)
+        logic.GetFigures()[i]=Integer.parseInt(separated[1+i]);
 
     //Сохраняем очки пользователя
     logic.SetScore(Integer.parseInt(separated[4]));
     //Сохраняем текущую фигуру
     logic.CreateObject(Integer.parseInt(separated[5]));
 
+//    byte[] blob = sqw.ReadGameState();
+//    String json = new String(blob);
+//    Gson gson = new Gson();
+//    LogicMachine retrieved_logic = gson.fromJson(json, new TypeToken<LogicMachine>()
+//    {}.getType());
+//    logic=retrieved_logic;
 }
 
     void StartNewGame()
@@ -144,6 +168,15 @@ void ContinueGame(String lastGameData)
     public void onBackPressed() {
 
 
+        //Создаем объект GSON
+//        Gson gson = new Gson();
+//        //Затем конвертируем наш класс логики в массив байт и передаем для записи в БД
+//        try {
+//            sqw.WriteGameState(gson.toJson(logic).getBytes());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
         //Строка в которую записываем сохраняемые данные
         String out = "";
         //Переносим данные о состоянии игрового поля со всеми фигурами
@@ -156,11 +189,13 @@ void ContinueGame(String lastGameData)
                     out+='0';
             }
 
+        sqw.WriteGameState(out,logic.GetFigures(),logic.GetScore(),logic.currentFigure,logic.GetCurrentObject().GetObjectCoord());
         //Записываем разделительные знаки, они делят строку данных на отдельные блоки
         out+='&';
+
         //Записываем данные о предсказанных фигурах
-        for(int i=0;i<logic.figures.length;i++)
-            out += String.valueOf(logic.figures[i])+'&';
+        for(int i=0;i<logic.GetFigures().length;i++)
+            out += String.valueOf(logic.GetFigures()[i])+'&';
         //Сохраняем очки пользователя
         out+=String.valueOf(logic.GetScore())+'&';
         //Сохраняем текущую фигуру
@@ -178,6 +213,8 @@ void ContinueGame(String lastGameData)
             e.printStackTrace();
         }
         finish();
+
+
         return;
     }
 
@@ -229,11 +266,11 @@ void ContinueGame(String lastGameData)
     void SetPredictedFigures()
     {
             ImageView image=(ImageView) findViewById(R.id.imageView1);
-            image.setImageResource(GetImageNum(logic.figures[0]));
+            image.setImageResource(GetImageNum(logic.GetFigures()[0]));
             image=(ImageView) findViewById(R.id.imageView2);
-            image.setImageResource(GetImageNum(logic.figures[1]));
+            image.setImageResource(GetImageNum(logic.GetFigures()[1]));
             image=(ImageView) findViewById(R.id.imageView3);
-            image.setImageResource(GetImageNum(logic.figures[2]));
+            image.setImageResource(GetImageNum(logic.GetFigures()[2]));
     }
     //Шаг с которой изменяется скорость движения фигур в миллисекундах
     int stepChangeSpeedMs=100;
@@ -255,6 +292,8 @@ void ContinueGame(String lastGameData)
                 //Делаем последний апедейт сцены
                 canvasView.UpdatePlane(logic.gamePlanel);
                 canvasView.postInvalidate();
+                sqw.ClearSettingsTable();
+                sqw.SetChampion(logic.player.GetScore());
 //                //Включение анимации GameOver
 //                ImageView a_gameover=(ImageView)findViewById(R.id.anim_gameover);
 //                Drawable drawable=a_gameover.getDrawable();

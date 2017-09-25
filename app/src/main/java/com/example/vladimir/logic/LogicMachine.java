@@ -36,7 +36,7 @@ public class LogicMachine
     //Количествопрогнозируемых фигур
     public int countFigures=3;
     //Массив следующих трех фигур которые выпадут
-    public int[]figures=new int[countFigures];
+    int[]figures=new int[countFigures];
    //Вернуть ширину игрового поля
     public int GetWidth()
     {
@@ -59,10 +59,27 @@ public int currentFigure;
         GameHeight = res.getInteger(R.integer.GameFeel_Heigth);
         gamePlanel=new boolean[GameWidth][GameHeight];
         player=new Player();
+        //Генерируем предсказание на первые 3 фигуры
         SetStartFigures();
     }
     //Класс игрового объекта. Это класс родитель.
     GameObject currentObject;
+    //Возвращает текущий игровой объект
+    public GameObject GetCurrentObject()
+    {
+        return  currentObject;
+    }
+    //Возвращаем массив с предсказанными фигурами
+    public int[] GetFigures()
+    {
+        return figures;
+    }
+
+    public void SetFigures(int[]f)
+    {
+        for(int i=0;i<f.length;i++)
+            figures[i]=f[i];
+    }
     //Генерация первых трех фигур на старте
     private void SetStartFigures()
     {
@@ -120,7 +137,7 @@ public int currentFigure;
         //Обновляем последнюю сгенерированную фигуру
         figures[figures.length-1]=GetRandomNumber();
         //После создания нового объекта проверяем не заканчивается ли игра с появлением этого объекта на поле
-        return CheckEnd(currentObject.objCoord);
+        return CheckEnd(currentObject.GetObjectCoord());
     }
 
     public int GetScore()
@@ -134,22 +151,22 @@ public int currentFigure;
     //Обнуляет ячейки игрового поля в которых находится текущая фигура
     void ClearObjectOnPlane()
     {
-        for(int i=0;i<currentObject.objCoord.length;i++)
-        gamePlanel[currentObject.objCoord[i][0]][currentObject.objCoord[i][1]]=false;
+        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
+        gamePlanel[currentObject.GetObjectCoord()[i][0]][currentObject.GetObjectCoord()[i][1]]=false;
     }
     //Заполняет ячейки игрового поля в которых находится текущая фигура
     void PlaceObjectOnPlane()
     {
-        for(int i=0;i<currentObject.objCoord.length;i++)
-            gamePlanel[currentObject.objCoord[i][0]][currentObject.objCoord[i][1]]=true;
+        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
+            gamePlanel[currentObject.GetObjectCoord()[i][0]][currentObject.GetObjectCoord()[i][1]]=true;
     }
 
     //Проверяет точки под всеми точками текущей фигуры, если хоть под одной игровое поле заканчивается, возвращает false, иначе true
     boolean BottomCheck()
     {
         int limit=GameHeight-1;
-        for(int i=0;i<currentObject.objCoord.length;i++)
-                if (currentObject.objCoord[i][1]==limit)
+        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
+                if (currentObject.GetObjectCoord()[i][1]==limit)
                     return false;
         return true;
     }
@@ -166,8 +183,8 @@ public int currentFigure;
 // Проверяет точки под всеми точками текущей фигуры, если хоть под одной есть занятое пространство и эта точка не принадлежит самой  фигуре возвращает true, иначе false
     boolean BottomFiguresCheck()
     {
-        for(int i=0;i<currentObject.objCoord.length;i++)
-            if(gamePlanel[currentObject.objCoord[i][0]][currentObject.objCoord[i][1]+1]==true && !CheckObjectPoints(currentObject.objCoord[i][0],currentObject.objCoord[i][1]+1,currentObject.objCoord))
+        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
+            if(gamePlanel[currentObject.GetObjectCoord()[i][0]][currentObject.GetObjectCoord()[i][1]+1]==true && !CheckObjectPoints(currentObject.GetObjectCoord()[i][0],currentObject.GetObjectCoord()[i][1]+1,currentObject.GetObjectCoord()))
                     return true;
         return false;
     }
@@ -229,7 +246,7 @@ public int currentFigure;
     {
         try {
             for (int i = 0; i < rot.length; i++)
-                if (rot[i][1]>=GameHeight || (gamePlanel[rot[i][0]][rot[i][1]] == true && !CheckObjectPoints(rot[i][0],rot[i][1],currentObject.objCoord)) )
+                if (rot[i][1]>=GameHeight || (gamePlanel[rot[i][0]][rot[i][1]] == true && !CheckObjectPoints(rot[i][0],rot[i][1],currentObject.GetObjectCoord())) )
                 {
                     return false;
                 }
@@ -252,9 +269,9 @@ public int currentFigure;
             {
                 //Если поворот возможен то заменяем основную фигуру повернутои и перерисовываем
                 ClearObjectOnPlane();
-                for (int i = 0; i < currentObject.objCoord.length; i++)
-                    for (int j = 0; j < currentObject.objCoord[0].length; j++)
-                        currentObject.objCoord[i][j] = rot[i][j];
+                for (int i = 0; i < currentObject.GetObjectCoord().length; i++)
+                    for (int j = 0; j < currentObject.GetObjectCoord()[0].length; j++)
+                        currentObject.GetObjectCoord()[i][j] = rot[i][j];
                 PlaceObjectOnPlane();
             }
         } catch (Exception e) {
@@ -343,8 +360,8 @@ void LineFillinCheck()
     boolean LeftCheck()
     {
         int limit=0;
-        for(int i=0;i<currentObject.objCoord.length;i++)
-            if (currentObject.objCoord[i][0]==limit)
+        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
+            if (currentObject.GetObjectCoord()[i][0]==limit)
                 return false;
         return true;
     }
@@ -353,8 +370,8 @@ void LineFillinCheck()
     // возвращает false, иначе true
     boolean LeftFiguresCheck()
     {
-        for(int i=0;i<currentObject.objCoord.length;i++)
-            if(gamePlanel[currentObject.objCoord[i][0]-1][currentObject.objCoord[i][1]]==true && !CheckObjectPoints(currentObject.objCoord[i][0]-1,currentObject.objCoord[i][1],currentObject.objCoord))
+        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
+            if(gamePlanel[currentObject.GetObjectCoord()[i][0]-1][currentObject.GetObjectCoord()[i][1]]==true && !CheckObjectPoints(currentObject.GetObjectCoord()[i][0]-1,currentObject.GetObjectCoord()[i][1],currentObject.GetObjectCoord()))
                 return true;
         return false;
     }
@@ -375,8 +392,8 @@ void LineFillinCheck()
     boolean RightCheck()
     {
         int limit=GameWidth-1;
-        for(int i=0;i<currentObject.objCoord.length;i++)
-            if (currentObject.objCoord[i][0]==limit)
+        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
+            if (currentObject.GetObjectCoord()[i][0]==limit)
                 return false;
         return true;
     }
@@ -385,8 +402,8 @@ void LineFillinCheck()
     // возвращает true, иначе false
     boolean RightFiguresCheck()
     {
-        for(int i=0;i<currentObject.objCoord.length;i++)
-            if(gamePlanel[currentObject.objCoord[i][0]+1][currentObject.objCoord[i][1]]==true && !CheckObjectPoints(currentObject.objCoord[i][0]+1,currentObject.objCoord[i][1],currentObject.objCoord))
+        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
+            if(gamePlanel[currentObject.GetObjectCoord()[i][0]+1][currentObject.GetObjectCoord()[i][1]]==true && !CheckObjectPoints(currentObject.GetObjectCoord()[i][0]+1,currentObject.GetObjectCoord()[i][1],currentObject.GetObjectCoord()))
                 return true;
         return false;
     }

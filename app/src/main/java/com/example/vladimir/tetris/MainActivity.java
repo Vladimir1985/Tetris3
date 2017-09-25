@@ -34,4 +34,13 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    public void ScoreList(View view)
+    {
+        Intent intent = new Intent(this,ScoreActivity.class);
+//        Bundle b=new Bundle();
+//        b.putInt("key",2);
+//        intent.putExtras(b);
+        startActivity(intent);
+    }
+
 }

@@ -17,7 +17,21 @@ public abstract class GameObject
     //Флаг фазы поворота объекта. Если 0 то объект не повернут
     protected int rotationOption=0;
     //Матрица координат текущего обьекта вида [x][y]
-    public int [][]objCoord;
+    int [][]objCoord;
+
+    public  int [][]GetObjectCoord()
+    {
+        return  objCoord;
+    }
+    public  void SetObjectCoord(int[][] c)
+    {
+        for(int i=0;i<c.length;i++)
+        {
+            objCoord[i][0]=c[i][0];
+            objCoord[i][1]=c[i][1];
+        }
+    }
+
     public GameObject()
     {
 

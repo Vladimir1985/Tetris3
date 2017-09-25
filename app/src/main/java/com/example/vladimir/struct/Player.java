@@ -36,5 +36,6 @@ public class Player {
     public void SetScore(int i)
     {
         score=i;
+        level=(byte)(score/levelThreshold+1);
     }
 }
