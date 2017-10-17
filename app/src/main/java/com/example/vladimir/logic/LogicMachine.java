@@ -21,22 +21,23 @@ import java.util.Random;
 public class LogicMachine
 {
     //Размеры нашего игрового поля в игровых "кубиках"
-    protected int GameWidth ;
-    protected int  GameHeight;
+    int GameWidth ;
+    int  GameHeight;
 
-    //Матрица отвечающая за отображение игрового поля. Если элемент матрицы равен "true" то значит в этой ячейке находится объект, если "false" то нет
-    public boolean[][] gamePlanel;
+    //Матрица отвечающая за отображение игрового поля. Если элемент матрицы равен "true" то значит в этой ячейке находится объект,
+    // если "false" то нет
+   // boolean[][] gamePlanel;
 
     private Context context;
-    //Класс хранящий данные о текущем игроке
-    public Player player;
+    //Класс хранящий данные о текущем состоянии игры
+    CurrentState currentState;
+
+
+
     //Флаг конца игры
     public boolean gameover=false;
 
-    //Количествопрогнозируемых фигур
-    public int countFigures=3;
-    //Массив следующих трех фигур которые выпадут
-    int[]figures=new int[countFigures];
+
    //Вернуть ширину игрового поля
     public int GetWidth()
     {
@@ -47,46 +48,79 @@ public class LogicMachine
     {
         return  GameHeight;
     }
-//Тип текущего объекта
-public int currentFigure;
+     public int GetLevel()
+     {
+         return  currentState.GetLevel();
+     }
+
+     public CurrentState GetCurrentState()
+     {
+         return  currentState;
+     }
+
+    public void SetCurrentState(CurrentState currentState)
+    {
+        this.currentState=currentState;
+        currentState.coord=currentState.GetObject().GetObjectCoord();
+    }
+
+
+    public void SetCurrentStateAfterLoad(CurrentState currentState)
+    {
+        this.currentState=currentState;
+        CreateObject(currentState.currentFigure);
+        this.currentState.GetObject().SetObjectCoord(currentState.coord);
+
+    }
+    //Возвращаем тип текущего объекта
+    public int GetCurrentFigure()
+    {
+        return  currentState.GetCurrentFigure();
+    }
     public  LogicMachine(Context current)
     {
         this.context=current;
 
         //Размеры игрового поля берем из ресурсов и создаем игровое поле и игрока
         Resources res = context.getResources();
+
         GameWidth = res.getInteger(R.integer.GameFeel_Width);
         GameHeight = res.getInteger(R.integer.GameFeel_Heigth);
-        gamePlanel=new boolean[GameWidth][GameHeight];
-        player=new Player();
+        currentState=new CurrentState();
+       // gamePlanel=new boolean[GameWidth][GameHeight];
+        //player=new Player();
         //Генерируем предсказание на первые 3 фигуры
         SetStartFigures();
     }
-    //Класс игрового объекта. Это класс родитель.
-    GameObject currentObject;
+
+
+    //Возвращаем игровое поле
+    public boolean[][] GetBattlefield()
+    {
+        return currentState.GetPanel();
+    }
     //Возвращает текущий игровой объект
     public GameObject GetCurrentObject()
     {
-        return  currentObject;
+        return  currentState.GetObject();
     }
     //Возвращаем массив с предсказанными фигурами
     public int[] GetFigures()
     {
-        return figures;
+        return currentState.GetFigures();
     }
-
+    //Устанавливает массив с предсказанными фигурами
     public void SetFigures(int[]f)
     {
-        for(int i=0;i<f.length;i++)
-            figures[i]=f[i];
+        currentState.SetFigures(f);
     }
     //Генерация первых трех фигур на старте
     private void SetStartFigures()
     {
-        for(int i=0;i<countFigures;i++)
-            figures[i] = GetRandomNumber();
+        for(int i=0;i<currentState.GetFigures().length;i++)
+            currentState.GetFigures()[i] = GetRandomNumber();
     }
-
+    //Генерируем число от 0 до 7
     public int GetRandomNumber()
     {
         //Генерируем число от 0 до 7
@@ -95,20 +129,26 @@ public int currentFigure;
         return  i;
     }
 
+    void InitializeGameObject(int i)
+    {
+        GameObject currentObject;
+        switch (i)
+        {
+            case 0:currentObject=new CubeObject();currentState.SetObject(currentObject);break;
+            case 1:currentObject=new StraightObject();currentState.SetObject(currentObject);break;
+            case 2:currentObject=new TObject();currentState.SetObject(currentObject);break;
+            case 3:currentObject=new RAngleObject();currentState.SetObject(currentObject);break;
+            case 4:currentObject=new LAngleObject();currentState.SetObject(currentObject);break;
+            case 5:currentObject=new LZObject();currentState.SetObject(currentObject);break;
+            case 6:currentObject=new RZObject();currentState.SetObject(currentObject);break;
+            default:break;
+        }
+    }
     //Создаем заданный объект
     public boolean CreateObject(int i)
     {
-        switch (i)
-        {
-            case 0:currentObject=new CubeObject();break;
-            case 1:currentObject=new StraightObject();break;
-            case 2:currentObject=new TObject();break;
-            case 3:currentObject=new RAngleObject();break;
-            case 4:currentObject=new LAngleObject();break;
-            case 5:currentObject=new LZObject();break;
-            case 6:currentObject=new RZObject();break;
-            default:break;
-        }
+        //В зависимости от числа мы инициализируем объект родительского класса нужным классом потомком
+        InitializeGameObject(i);
         return true;
     }
     //Создаем случайный объект
@@ -116,57 +156,47 @@ public int currentFigure;
     {
 
         //В зависимости от числа мы инициализируем объект родительского класса нужным классом потомком
-        switch (figures[0])
-        {
-            case 0:currentObject=new CubeObject();break;
-            case 1:currentObject=new StraightObject();break;
-            case 2:currentObject=new TObject();break;
-            case 3:currentObject=new RAngleObject();break;
-            case 4:currentObject=new LAngleObject();break;
-            case 5:currentObject=new LZObject();break;
-            case 6:currentObject=new RZObject();break;
-            default:break;
-        }
+        InitializeGameObject(currentState.GetFigures()[0]);
         //Номер текущей фигуры
-    currentFigure=figures[0];
+        currentState.SetCurrentFigure(currentState.GetFigures()[0]);
 
         //Сдвигаем массив предсказанных фигур на 1 элемент "влево"
-        for (int i = 0; i <figures.length-1; i++)
-            figures[i] = figures[i+1];
+        for (int i = 0; i <currentState.GetFigures().length-1; i++)
+            currentState.GetFigures()[i] = currentState.GetFigures()[i+1];
 
         //Обновляем последнюю сгенерированную фигуру
-        figures[figures.length-1]=GetRandomNumber();
+        currentState.GetFigures()[currentState.GetFigures().length-1]=GetRandomNumber();
         //После создания нового объекта проверяем не заканчивается ли игра с появлением этого объекта на поле
-        return CheckEnd(currentObject.GetObjectCoord());
+        return CheckEnd(currentState.GetObject().GetObjectCoord());
     }
 
     public int GetScore()
 {
-    return player.GetScore();
+    return currentState.GetScore();
 }
     public void SetScore(int score)
     {
-        player.SetScore(score);
+        currentState.SetScore(score);
     }
     //Обнуляет ячейки игрового поля в которых находится текущая фигура
     void ClearObjectOnPlane()
     {
-        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
-        gamePlanel[currentObject.GetObjectCoord()[i][0]][currentObject.GetObjectCoord()[i][1]]=false;
+        for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
+        currentState.SetGamePanel(currentState.GetObject().GetObjectCoord()[i][0],currentState.GetObject().GetObjectCoord()[i][1],false);
     }
     //Заполняет ячейки игрового поля в которых находится текущая фигура
     void PlaceObjectOnPlane()
     {
-        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
-            gamePlanel[currentObject.GetObjectCoord()[i][0]][currentObject.GetObjectCoord()[i][1]]=true;
+        for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
+            currentState.SetGamePanel(currentState.GetObject().GetObjectCoord()[i][0],currentState.GetObject().GetObjectCoord()[i][1],true);
     }
 
     //Проверяет точки под всеми точками текущей фигуры, если хоть под одной игровое поле заканчивается, возвращает false, иначе true
     boolean BottomCheck()
     {
         int limit=GameHeight-1;
-        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
-                if (currentObject.GetObjectCoord()[i][1]==limit)
+        for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
+                if (currentState.GetObject().GetObjectCoord()[i][1]==limit)
                     return false;
         return true;
     }
@@ -183,8 +213,8 @@ public int currentFigure;
 // Проверяет точки под всеми точками текущей фигуры, если хоть под одной есть занятое пространство и эта точка не принадлежит самой  фигуре возвращает true, иначе false
     boolean BottomFiguresCheck()
     {
-        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
-            if(gamePlanel[currentObject.GetObjectCoord()[i][0]][currentObject.GetObjectCoord()[i][1]+1]==true && !CheckObjectPoints(currentObject.GetObjectCoord()[i][0],currentObject.GetObjectCoord()[i][1]+1,currentObject.GetObjectCoord()))
+        for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
+            if(currentState.GetGamePanel(currentState.GetObject().GetObjectCoord()[i][0],currentState.GetObject().GetObjectCoord()[i][1]+1)==true && !CheckObjectPoints(currentState.GetObject().GetObjectCoord()[i][0],currentState.GetObject().GetObjectCoord()[i][1]+1,currentState.GetObject().GetObjectCoord()))
                     return true;
         return false;
     }
@@ -230,7 +260,7 @@ public int currentFigure;
     {
         try {
             for (int i = 0; i < rot.length; i++)
-                if (gamePlanel[rot[i][0]][rot[i][1]] == true)
+                if (currentState.GetGamePanel(rot[i][0],rot[i][1]) == true)
                     return false;
         }catch (Exception e)
         {
@@ -246,7 +276,7 @@ public int currentFigure;
     {
         try {
             for (int i = 0; i < rot.length; i++)
-                if (rot[i][1]>=GameHeight || (gamePlanel[rot[i][0]][rot[i][1]] == true && !CheckObjectPoints(rot[i][0],rot[i][1],currentObject.GetObjectCoord())) )
+                if (rot[i][1]>=GameHeight || (currentState.GetGamePanel(rot[i][0],rot[i][1]) == true && !CheckObjectPoints(rot[i][0],rot[i][1],currentState.GetObject().GetObjectCoord())) )
                 {
                     return false;
                 }
@@ -263,15 +293,15 @@ public int currentFigure;
     {
         try {
             //Поворачиваем текущий объект, и выравниваем его по краю если при повороте он вышел за пределы игрового поля
-            int rot[][]= BoundaryAlignment(currentObject.IfRotation());
+            int rot[][]= BoundaryAlignment(currentState.GetObject().IfRotation());
             //Проверяем можно ли поместить повернутый лбъект на игровое поле без пересечений с другими объектами
             if(CheckPosibility(rot))
             {
                 //Если поворот возможен то заменяем основную фигуру повернутои и перерисовываем
                 ClearObjectOnPlane();
-                for (int i = 0; i < currentObject.GetObjectCoord().length; i++)
-                    for (int j = 0; j < currentObject.GetObjectCoord()[0].length; j++)
-                        currentObject.GetObjectCoord()[i][j] = rot[i][j];
+                for (int i = 0; i < currentState.GetObject().GetObjectCoord().length; i++)
+                    for (int j = 0; j < currentState.GetObject().GetObjectCoord()[0].length; j++)
+                        currentState.GetObject().GetObjectCoord()[i][j] = rot[i][j];
                 PlaceObjectOnPlane();
             }
         } catch (Exception e) {
@@ -286,9 +316,9 @@ public int currentFigure;
             for (int j = 0; j < GameWidth; j++)
             {
                 if(i!=0)
-                    gamePlanel[j][i]=gamePlanel[j][i-1];
+                    currentState.SetGamePanel(j,i,currentState.GetGamePanel(j,i-1));
                 else
-                    gamePlanel[j][i]=false;
+                    currentState.SetGamePanel(j,i,false);
             }
         }
     }
@@ -298,14 +328,14 @@ void LineFillinCheck()
     for(int i=0;i<GameHeight;i++)
     {
         for (int j = 0; j < GameWidth; j++) {
-            if (gamePlanel[j][i] == false)
+            if (currentState.GetGamePanel(j,i) == false)
             {
                 break;
             }else
             {
                 if(j==GameWidth-1) {
                     DeleteLine(i);
-                    player.IncrementScore();
+                    currentState.IncrementScore();
                 }
             }
 
@@ -341,7 +371,7 @@ void LineFillinCheck()
                 }else
                 {
                     //Двигаем фигуру на шаг вниз
-                    currentObject.Down();
+                    currentState.GetObject().Down();
                     //Прорисовываем текущий объект в игровом поле
                     PlaceObjectOnPlane();
                 }
@@ -360,8 +390,8 @@ void LineFillinCheck()
     boolean LeftCheck()
     {
         int limit=0;
-        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
-            if (currentObject.GetObjectCoord()[i][0]==limit)
+        for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
+            if (currentState.GetObject().GetObjectCoord()[i][0]==limit)
                 return false;
         return true;
     }
@@ -370,8 +400,8 @@ void LineFillinCheck()
     // возвращает false, иначе true
     boolean LeftFiguresCheck()
     {
-        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
-            if(gamePlanel[currentObject.GetObjectCoord()[i][0]-1][currentObject.GetObjectCoord()[i][1]]==true && !CheckObjectPoints(currentObject.GetObjectCoord()[i][0]-1,currentObject.GetObjectCoord()[i][1],currentObject.GetObjectCoord()))
+        for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
+            if(currentState.GetGamePanel(currentState.GetObject().GetObjectCoord()[i][0]-1,currentState.GetObject().GetObjectCoord()[i][1])==true && !CheckObjectPoints(currentState.GetObject().GetObjectCoord()[i][0]-1,currentState.GetObject().GetObjectCoord()[i][1],currentState.GetObject().GetObjectCoord()))
                 return true;
         return false;
     }
@@ -382,7 +412,7 @@ void LineFillinCheck()
     ClearObjectOnPlane();
     if(LeftCheck())
         if(!LeftFiguresCheck())
-        currentObject.Left();
+            currentState.GetObject().Left();
     PlaceObjectOnPlane();
 
 }
@@ -392,8 +422,8 @@ void LineFillinCheck()
     boolean RightCheck()
     {
         int limit=GameWidth-1;
-        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
-            if (currentObject.GetObjectCoord()[i][0]==limit)
+        for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
+            if (currentState.GetObject().GetObjectCoord()[i][0]==limit)
                 return false;
         return true;
     }
@@ -402,8 +432,8 @@ void LineFillinCheck()
     // возвращает true, иначе false
     boolean RightFiguresCheck()
     {
-        for(int i=0;i<currentObject.GetObjectCoord().length;i++)
-            if(gamePlanel[currentObject.GetObjectCoord()[i][0]+1][currentObject.GetObjectCoord()[i][1]]==true && !CheckObjectPoints(currentObject.GetObjectCoord()[i][0]+1,currentObject.GetObjectCoord()[i][1],currentObject.GetObjectCoord()))
+        for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
+            if(currentState.GetGamePanel(currentState.GetObject().GetObjectCoord()[i][0]+1,currentState.GetObject().GetObjectCoord()[i][1])==true && !CheckObjectPoints(currentState.GetObject().GetObjectCoord()[i][0]+1,currentState.GetObject().GetObjectCoord()[i][1],currentState.GetObject().GetObjectCoord()))
                 return true;
         return false;
     }
@@ -412,7 +442,7 @@ void LineFillinCheck()
         ClearObjectOnPlane();
         if(RightCheck())
             if(!RightFiguresCheck())
-            currentObject.Right();
+                currentState.GetObject().Right();
         PlaceObjectOnPlane();
     }
 }
