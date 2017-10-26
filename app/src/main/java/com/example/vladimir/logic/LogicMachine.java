@@ -1,22 +1,11 @@
 package com.example.vladimir.logic;
-
-import android.content.Context;
-import android.content.res.Resources;
-import android.provider.Settings;
 import android.util.Log;
 
-//import com.example.vladimir.struct.CubeObject;
 import com.example.vladimir.struct.*;
-//import com.example.vladimir.struct.GameObject;
-//import com.example.vladimir.struct.Player;
-//import com.example.vladimir.struct.StraightObject;
-import com.example.vladimir.tetris.R;
 
 import java.util.Random;
 
-/**
- * Created by Vladimir on 28.06.2017.
- */
+
 
 public class LogicMachine
 {
@@ -24,29 +13,23 @@ public class LogicMachine
     int GameWidth ;
     int  GameHeight;
 
-    //Матрица отвечающая за отображение игрового поля. Если элемент матрицы равен "true" то значит в этой ячейке находится объект,
-    // если "false" то нет
-   // boolean[][] gamePlanel;
+    final int CUBE=0;
+    final int STRAIGHT=1;
+    final int T_OBJECT=2;
+    final int R_ANGLE=3;
+    final int L_ANGLE=4;
+    final int LZ=5;
+    final int RZ=6;
 
-    private Context context;
     //Класс хранящий данные о текущем состоянии игры
     CurrentState currentState;
 
-
-
     //Флаг конца игры
-    public boolean gameover=false;
+    boolean gameover=false;
 
-
-   //Вернуть ширину игрового поля
-    public int GetWidth()
+    public  boolean getGameOverState()
     {
-        return  GameWidth;
-    }
-    //Вернуть высоту игрового поля
-    public int GetHeigth()
-    {
-        return  GameHeight;
+        return  gameover;
     }
      public int GetLevel()
      {
@@ -58,37 +41,18 @@ public class LogicMachine
          return  currentState;
      }
 
-    public void SetCurrentState(CurrentState currentState)
-    {
-        this.currentState=currentState;
-        currentState.coord=currentState.GetObject().GetObjectCoord();
-    }
-
-
     public void SetCurrentStateAfterLoad(CurrentState currentState)
     {
         this.currentState=currentState;
-        CreateObject(currentState.currentFigure);
-        this.currentState.GetObject().SetObjectCoord(currentState.coord);
-
     }
-    //Возвращаем тип текущего объекта
-    public int GetCurrentFigure()
-    {
-        return  currentState.GetCurrentFigure();
-    }
-    public  LogicMachine(Context current)
-    {
-        this.context=current;
 
-        //Размеры игрового поля берем из ресурсов и создаем игровое поле и игрока
-        Resources res = context.getResources();
-
-        GameWidth = res.getInteger(R.integer.GameFeel_Width);
-        GameHeight = res.getInteger(R.integer.GameFeel_Heigth);
+    public  LogicMachine()
+    {
+        //Размеры игрового поля берем из класса текущего состояния
         currentState=new CurrentState();
-       // gamePlanel=new boolean[GameWidth][GameHeight];
-        //player=new Player();
+        GameWidth = currentState.getWidth();
+        GameHeight = currentState.getHeight();
+
         //Генерируем предсказание на первые 3 фигуры
         SetStartFigures();
     }
@@ -99,21 +63,13 @@ public class LogicMachine
     {
         return currentState.GetPanel();
     }
-    //Возвращает текущий игровой объект
-    public GameObject GetCurrentObject()
-    {
-        return  currentState.GetObject();
-    }
+
     //Возвращаем массив с предсказанными фигурами
     public int[] GetFigures()
     {
         return currentState.GetFigures();
     }
-    //Устанавливает массив с предсказанными фигурами
-    public void SetFigures(int[]f)
-    {
-        currentState.SetFigures(f);
-    }
+
     //Генерация первых трех фигур на старте
     private void SetStartFigures()
     {
@@ -132,35 +88,29 @@ public class LogicMachine
     void InitializeGameObject(int i)
     {
         GameObject currentObject;
+
         switch (i)
         {
-            case 0:currentObject=new CubeObject();currentState.SetObject(currentObject);break;
-            case 1:currentObject=new StraightObject();currentState.SetObject(currentObject);break;
-            case 2:currentObject=new TObject();currentState.SetObject(currentObject);break;
-            case 3:currentObject=new RAngleObject();currentState.SetObject(currentObject);break;
-            case 4:currentObject=new LAngleObject();currentState.SetObject(currentObject);break;
-            case 5:currentObject=new LZObject();currentState.SetObject(currentObject);break;
-            case 6:currentObject=new RZObject();currentState.SetObject(currentObject);break;
+            case CUBE:currentObject=new CubeObject();currentState.SetObject(currentObject);break;
+            case STRAIGHT:currentObject=new StraightObject();currentState.SetObject(currentObject);break;
+            case T_OBJECT:currentObject=new TObject();currentState.SetObject(currentObject);break;
+            case R_ANGLE:currentObject=new RAngleObject();currentState.SetObject(currentObject);break;
+            case L_ANGLE:currentObject=new LAngleObject();currentState.SetObject(currentObject);break;
+            case LZ:currentObject=new LZObject();currentState.SetObject(currentObject);break;
+            case RZ:currentObject=new RZObject();currentState.SetObject(currentObject);break;
             default:break;
         }
     }
-    //Создаем заданный объект
-    public boolean CreateObject(int i)
-    {
-        //В зависимости от числа мы инициализируем объект родительского класса нужным классом потомком
-        InitializeGameObject(i);
-        return true;
-    }
+
     //Создаем случайный объект
     public boolean CreateObject()
     {
-
         //В зависимости от числа мы инициализируем объект родительского класса нужным классом потомком
         InitializeGameObject(currentState.GetFigures()[0]);
         //Номер текущей фигуры
         currentState.SetCurrentFigure(currentState.GetFigures()[0]);
 
-        //Сдвигаем массив предсказанных фигур на 1 элемент "влево"
+        //Сдвигаем массив предсказанных фигур на 1 элемент
         for (int i = 0; i <currentState.GetFigures().length-1; i++)
             currentState.GetFigures()[i] = currentState.GetFigures()[i+1];
 
@@ -174,21 +124,21 @@ public class LogicMachine
 {
     return currentState.GetScore();
 }
-    public void SetScore(int score)
-    {
-        currentState.SetScore(score);
-    }
     //Обнуляет ячейки игрового поля в которых находится текущая фигура
-    void ClearObjectOnPlane()
+    //Или заполняет ячейки игрового поля в которых находится текущая фигура
+    //используется для затирания старой позиции фигуры, перед тем как прорисовать её на новой
+    //или для прорисовки фигуры
+    void setStateCurrentObjectOnPlane(boolean b)
     {
+        int x,y;
         for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
-        currentState.SetGamePanel(currentState.GetObject().GetObjectCoord()[i][0],currentState.GetObject().GetObjectCoord()[i][1],false);
-    }
-    //Заполняет ячейки игрового поля в которых находится текущая фигура
-    void PlaceObjectOnPlane()
-    {
-        for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
-            currentState.SetGamePanel(currentState.GetObject().GetObjectCoord()[i][0],currentState.GetObject().GetObjectCoord()[i][1],true);
+        {
+            //Перебираем все ячейки игрового поля которые покрывает текущая фигура
+            //Берем их координаты и устанавливаем в соответствии с входным параметром
+            x=currentState.GetObject().GetObjectCoord()[i][0];
+            y=currentState.GetObject().GetObjectCoord()[i][1];
+            currentState.SetGamePanel(x, y, b);
+        }
     }
 
     //Проверяет точки под всеми точками текущей фигуры, если хоть под одной игровое поле заканчивается, возвращает false, иначе true
@@ -210,12 +160,18 @@ public class LogicMachine
                 flag=true;
         return flag;
     }
-// Проверяет точки под всеми точками текущей фигуры, если хоть под одной есть занятое пространство и эта точка не принадлежит самой  фигуре возвращает true, иначе false
+// Проверяет точки под всеми точками текущей фигуры, если хоть под одной есть занятое пространство и эта точка не принадлежит самой
+// фигуре возвращает true, иначе false
     boolean BottomFiguresCheck()
     {
+        int x,y;
         for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
-            if(currentState.GetGamePanel(currentState.GetObject().GetObjectCoord()[i][0],currentState.GetObject().GetObjectCoord()[i][1]+1)==true && !CheckObjectPoints(currentState.GetObject().GetObjectCoord()[i][0],currentState.GetObject().GetObjectCoord()[i][1]+1,currentState.GetObject().GetObjectCoord()))
-                    return true;
+        {
+            x=currentState.GetObject().GetObjectCoord()[i][0];
+            y=currentState.GetObject().GetObjectCoord()[i][1] + 1;
+            if (currentState.GetGamePanel(x, y) == true && !CheckObjectPoints(x, y, currentState.GetObject().GetObjectCoord()))
+                return true;
+        }
         return false;
     }
 
@@ -258,14 +214,10 @@ public class LogicMachine
     //игра закончена.
     boolean CheckEnd(int rot[][])
     {
-        try {
-            for (int i = 0; i < rot.length; i++)
+        for (int i = 0; i < rot.length; i++)
                 if (currentState.GetGamePanel(rot[i][0],rot[i][1]) == true)
                     return false;
-        }catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+
         return true;
     }
 
@@ -274,16 +226,16 @@ public class LogicMachine
     //"false" иначе "true". Также мы проверяем не выходят ли точки повернутого объекта за пределы игрового поля снизу
    boolean CheckPosibility(int rot[][])
     {
-        try {
-            for (int i = 0; i < rot.length; i++)
-                if (rot[i][1]>=GameHeight || (currentState.GetGamePanel(rot[i][0],rot[i][1]) == true && !CheckObjectPoints(rot[i][0],rot[i][1],currentState.GetObject().GetObjectCoord())) )
-                {
-                    return false;
-                }
-
-        }catch (Exception e)
+        boolean cell_employment_flag, cell_belong_flag;
+        //Перебираем все ячейки
+        for (int i = 0; i < rot.length; i++)
         {
-            e.printStackTrace();
+            //Принадлежит ли ячейка нашему игровому полю
+            cell_belong_flag=CheckObjectPoints(rot[i][0], rot[i][1], currentState.GetObject().GetObjectCoord());
+            //Активна или нет ячейка с этими координатами
+            cell_employment_flag=currentState.GetGamePanel(rot[i][0], rot[i][1]);
+            if (rot[i][1] >= GameHeight || (cell_employment_flag && !cell_belong_flag))
+                return false;
         }
         return true;
     }
@@ -291,21 +243,18 @@ public class LogicMachine
     //Функция поворота фигуры
     public void RotateObject()
     {
-        try {
-            //Поворачиваем текущий объект, и выравниваем его по краю если при повороте он вышел за пределы игрового поля
-            int rot[][]= BoundaryAlignment(currentState.GetObject().IfRotation());
-            //Проверяем можно ли поместить повернутый лбъект на игровое поле без пересечений с другими объектами
-            if(CheckPosibility(rot))
-            {
-                //Если поворот возможен то заменяем основную фигуру повернутои и перерисовываем
-                ClearObjectOnPlane();
-                for (int i = 0; i < currentState.GetObject().GetObjectCoord().length; i++)
-                    for (int j = 0; j < currentState.GetObject().GetObjectCoord()[0].length; j++)
-                        currentState.GetObject().GetObjectCoord()[i][j] = rot[i][j];
-                PlaceObjectOnPlane();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        //Поворачиваем текущий объект, и выравниваем его по краю если при повороте он вышел за пределы игрового поля
+        int rot[][]= BoundaryAlignment(currentState.GetObject().IfRotation());
+        //Проверяем можно ли поместить повернутый объект на игровое поле без пересечений с другими объектами
+        if(CheckPosibility(rot))
+        {
+            //Если поворот возможен то заменяем основную фигуру повернутой и перерисовываем
+            setStateCurrentObjectOnPlane(false);
+            for (int i = 0; i < currentState.GetObject().GetObjectCoord().length; i++)
+                for (int j = 0; j < currentState.GetObject().GetObjectCoord()[0].length; j++)
+                    currentState.GetObject().GetObjectCoord()[i][j] = rot[i][j];
+            setStateCurrentObjectOnPlane(true);
+
         }
     }
 //Удаление указанной линии
@@ -326,8 +275,7 @@ public class LogicMachine
 void LineFillinCheck()
 {
     for(int i=0;i<GameHeight;i++)
-    {
-        for (int j = 0; j < GameWidth; j++) {
+        for (int j = 0; j < GameWidth; j++)
             if (currentState.GetGamePanel(j,i) == false)
             {
                 break;
@@ -338,9 +286,6 @@ void LineFillinCheck()
                     currentState.IncrementScore();
                 }
             }
-
-        }
-    }
 }
 
 //Вызывается в конце движения фигуры
@@ -357,7 +302,7 @@ void LineFillinCheck()
     public void MoveDown()
     {
             //Обнуляем координаты текущего объекта в нашем игровом поле
-            ClearObjectOnPlane();
+            setStateCurrentObjectOnPlane(false);
         //Если внизу еще не дно
             if(BottomCheck())
             {
@@ -365,7 +310,7 @@ void LineFillinCheck()
                 if(BottomFiguresCheck())
                 {
                     //Прорисовываем текущий объект в игровом поле
-                    PlaceObjectOnPlane();
+                    setStateCurrentObjectOnPlane(true);
                     //Конец хода
                     CheckAtEndMove();
                 }else
@@ -373,13 +318,13 @@ void LineFillinCheck()
                     //Двигаем фигуру на шаг вниз
                     currentState.GetObject().Down();
                     //Прорисовываем текущий объект в игровом поле
-                    PlaceObjectOnPlane();
+                    setStateCurrentObjectOnPlane(true);
                 }
             }
             else
             {
                 //Прорисовываем текущий объект в игровом поле
-                PlaceObjectOnPlane();
+                setStateCurrentObjectOnPlane(true);
                 //Конец хода
                 CheckAtEndMove();
             }
@@ -400,20 +345,25 @@ void LineFillinCheck()
     // возвращает false, иначе true
     boolean LeftFiguresCheck()
     {
+        int x,y;
         for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
-            if(currentState.GetGamePanel(currentState.GetObject().GetObjectCoord()[i][0]-1,currentState.GetObject().GetObjectCoord()[i][1])==true && !CheckObjectPoints(currentState.GetObject().GetObjectCoord()[i][0]-1,currentState.GetObject().GetObjectCoord()[i][1],currentState.GetObject().GetObjectCoord()))
+        {
+            x=currentState.GetObject().GetObjectCoord()[i][0] - 1;
+            y=currentState.GetObject().GetObjectCoord()[i][1];
+            if (currentState.GetGamePanel(x, y) == true && !CheckObjectPoints(x, y, currentState.GetObject().GetObjectCoord()))
                 return true;
+        }
         return false;
     }
 
     public void MoveLeft()
 {
     //Обнуляем координаты текущего объекта в нашем игровом поле
-    ClearObjectOnPlane();
+    setStateCurrentObjectOnPlane(false);
     if(LeftCheck())
         if(!LeftFiguresCheck())
             currentState.GetObject().Left();
-    PlaceObjectOnPlane();
+    setStateCurrentObjectOnPlane(true);
 
 }
 
@@ -432,17 +382,22 @@ void LineFillinCheck()
     // возвращает true, иначе false
     boolean RightFiguresCheck()
     {
+        int x,y;
         for(int i=0;i<currentState.GetObject().GetObjectCoord().length;i++)
-            if(currentState.GetGamePanel(currentState.GetObject().GetObjectCoord()[i][0]+1,currentState.GetObject().GetObjectCoord()[i][1])==true && !CheckObjectPoints(currentState.GetObject().GetObjectCoord()[i][0]+1,currentState.GetObject().GetObjectCoord()[i][1],currentState.GetObject().GetObjectCoord()))
+        {
+            x=currentState.GetObject().GetObjectCoord()[i][0]+1;
+            y=currentState.GetObject().GetObjectCoord()[i][1];
+            if (currentState.GetGamePanel(x, y) == true && !CheckObjectPoints(x, y, currentState.GetObject().GetObjectCoord()))
                 return true;
+        }
         return false;
     }
     public void MoveRight()
     {
-        ClearObjectOnPlane();
+        setStateCurrentObjectOnPlane(false);
         if(RightCheck())
             if(!RightFiguresCheck())
                 currentState.GetObject().Right();
-        PlaceObjectOnPlane();
+        setStateCurrentObjectOnPlane(true);
     }
 }
