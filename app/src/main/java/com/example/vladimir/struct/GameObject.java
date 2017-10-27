@@ -1,16 +1,10 @@
 package com.example.vladimir.struct;
 
 
-
-import android.content.Context;
-import android.content.res.Resources;
-
-import com.example.vladimir.tetris.R;
-
 //Класс-родитель объектов
 public abstract class GameObject
 {
-    private Context context;
+
     //Матрица содержащая координаты текущего объекта в повернутом состоянии
     protected int [][]objRotation;
 
@@ -23,14 +17,7 @@ public abstract class GameObject
     {
         return  objCoord;
     }
-    public  void SetObjectCoord(int[][] c)
-    {
-        for(int i=0;i<c.length;i++)
-        {
-            objCoord[i][0]=c[i][0];
-            objCoord[i][1]=c[i][1];
-        }
-    }
+
 
     public GameObject()
     {
