@@ -20,21 +20,28 @@ public class CurrentState {
     //Количество очков необходимое для перехода на следующий уровень
     public int levelThreshold=100;
     //Текущий уровень
-    public byte level=1;
-
-    public int [][]coord;
+    public int level=1;
 
     //Класс игрового объекта. Это класс родитель.
    public transient GameObject currentObject;
 
     //Матрица отвечающая за отображение игрового поля. Если элемент матрицы равен "true" то значит в этой ячейке находится объект,
     // если "false" то нет
-    public boolean[][] gamePlanel;
+    public boolean[][] gamePlane;
 
+    public int getWidth()
+    {
+        return width;
+    }
+
+    public int getHeight()
+    {
+        return height;
+    }
 //transient
    public CurrentState()
     {
-        gamePlanel=new boolean[width][height];
+        gamePlane=new boolean[width][height];
     }
 
 
@@ -50,17 +57,24 @@ public class CurrentState {
     }
     public void SetGamePanel(int coorX,int coorY,boolean value)
     {
-        gamePlanel[coorX][coorY]=value;
+        gamePlane[coorX][coorY]=value;
     }
 
     public boolean GetGamePanel(int coorX,int coorY)
     {
-        return  gamePlanel[coorX][coorY];
+        return  gamePlane[coorX][coorY];
     }
 
     public boolean[][] GetPanel()
     {
-        return  gamePlanel;
+        return  gamePlane;
+    }
+
+    public void SetPanel(boolean b[][])
+    {
+        for (int i = 0; i < width; i++)
+            for (int j = 0; j < height; j++)
+                gamePlane[i][j] = b[i][j];
     }
 
     public  void IncrementScore()
@@ -70,7 +84,7 @@ public class CurrentState {
             level++;
     }
 
-    public byte GetLevel()
+    public int GetLevel()
     {
         return  level;
     }
@@ -83,9 +97,13 @@ public class CurrentState {
     public void SetScore(int i)
     {
         score=i;
-        level=(byte)(score/levelThreshold+1);
+        level=score/levelThreshold+1;
     }
 
+    public void SetLevel(int level)
+    {
+        this.level=level;
+    }
     public int GetCurrentFigure()
     {
         return  currentFigure;
@@ -107,8 +125,4 @@ public class CurrentState {
 
     }
 
-     public void SetCoords(int[][] coord)
-     {
-         this.coord=coord;
-     }
 }
