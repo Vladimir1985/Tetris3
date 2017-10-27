@@ -1,6 +1,5 @@
 package com.example.vladimir.struct;
 
-import android.content.Context;
 
 public class CubeObject extends GameObject
 {
