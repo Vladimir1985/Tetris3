@@ -1,8 +1,6 @@
 package com.example.vladimir.struct;
 
-/**
- * Created by Vladimir on 27.07.2017.
- */
+
 
 public class RZObject extends GameObject {
 
