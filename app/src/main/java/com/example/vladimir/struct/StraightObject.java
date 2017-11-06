@@ -1,6 +1,6 @@
 package com.example.vladimir.struct;
 
-import android.content.Context;
+
 
 public class StraightObject extends GameObject
 {
