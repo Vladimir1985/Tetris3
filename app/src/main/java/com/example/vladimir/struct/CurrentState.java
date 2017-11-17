@@ -1,127 +1,99 @@
 package com.example.vladimir.struct;
 
+import com.example.vladimir.logic.LogicConst;
+
 public class CurrentState {
 
-    final int width=10;
-    final int height=20;
 
-    //Количество прогнозируемых фигур
-    public int countFigures=3;
+    boolean endOfTurn=false;
     //Массив следующих трех фигур которые выпадут
-    public int[]figures=new int[countFigures];
+    int[]mFigures=new int[LogicConst.COUNT_FIGURES];
 
     //Тип текущего объекта
-    public int currentFigure;
+    int mCurrentFigure;
 
     //Текущие очки
-    public int score=0;
-    //Количество очков добавляемых за одну собранную линию
-    public int scoreStep=100;
-    //Количество очков необходимое для перехода на следующий уровень
-    public int levelThreshold=100;
+    int mScore=0;
     //Текущий уровень
-    public int level=1;
+    int mLevel=1;
 
     //Класс игрового объекта. Это класс родитель.
-   public transient GameObject currentObject;
+   transient GameObject mCurrentObject;
 
     //Матрица отвечающая за отображение игрового поля. Если элемент матрицы равен "true" то значит в этой ячейке находится объект,
     // если "false" то нет
-    public boolean[][] gamePlane;
+    boolean[][] mGamePlane;
 
-    public int getWidth()
-    {
-        return width;
+    public void SetEndOfTurn(boolean b){
+        endOfTurn=b;
     }
 
-    public int getHeight()
-    {
-        return height;
-    }
-//transient
-   public CurrentState()
-    {
-        gamePlane=new boolean[width][height];
+    public boolean GetEndOfTurn(){
+        return  endOfTurn;
     }
 
-
-    public int [] GetFigures()
-    {
-        return  figures;
+    public CurrentState(){
+        mGamePlane=new boolean[LogicConst.WIDTH_GAMEFIELD][LogicConst.HEIGHT_GAMEFIELD];
     }
 
-    public void SetFigures(int[]f)
-    {
+    public int [] GetFigures(){
+        return  mFigures;
+    }
+
+    public void SetFigures(int[]f){
         for(int i=0;i<f.length;i++)
-            figures[i]=f[i];
-    }
-    public void SetGamePanel(int coorX,int coorY,boolean value)
-    {
-        gamePlane[coorX][coorY]=value;
+            mFigures[i]=f[i];
     }
 
-    public boolean GetGamePanel(int coorX,int coorY)
-    {
-        return  gamePlane[coorX][coorY];
+    public void SetGamePanel(int coorX,int coorY,boolean value){
+        mGamePlane[coorX][coorY]=value;
     }
 
-    public boolean[][] GetPanel()
-    {
-        return  gamePlane;
+    public boolean GetGamePanel(int coorX,int coorY){
+        return  mGamePlane[coorX][coorY];
     }
 
-    public void SetPanel(boolean b[][])
-    {
-        for (int i = 0; i < width; i++)
-            for (int j = 0; j < height; j++)
-                gamePlane[i][j] = b[i][j];
+    public boolean[][] GetPanel(){
+        return  mGamePlane;
     }
 
-    public  void IncrementScore()
-    {
-        score+=scoreStep;
-        if(score%levelThreshold==0)
-            level++;
+    public void SetPanel(boolean b[][]){
+        for (int i = 0; i < LogicConst.WIDTH_GAMEFIELD; i++)
+            for (int j = 0; j < LogicConst.HEIGHT_GAMEFIELD; j++)
+                mGamePlane[i][j] = b[i][j];
     }
 
-    public int GetLevel()
-    {
-        return  level;
+    public int GetLevel(){
+        return  mLevel;
     }
 
-    public int GetScore()
-    {
-        return score;
+    public int GetScore(){
+        return mScore;
     }
 
-    public void SetScore(int i)
-    {
-        score=i;
-        level=score/levelThreshold+1;
+    public void SetScore(int i){
+        mScore=i;
     }
 
-    public void SetLevel(int level)
-    {
-        this.level=level;
-    }
-    public int GetCurrentFigure()
-    {
-        return  currentFigure;
+    public void SetLevel(int level){
+        this.mLevel=level;
     }
 
-    public void SetCurrentFigure(int figure)
-    {
-        currentFigure=figure;
+    public int GetCurrentFigure(){
+        return  mCurrentFigure;
     }
 
-    public GameObject GetObject()
-    {
-        return currentObject;
+    public void SetCurrentFigure(int figure){
+        mCurrentFigure=figure;
     }
 
-    public  void SetObject(GameObject gO)
-    {
-        currentObject=gO;
+    public GameObject GetObject(){
+
+        return mCurrentObject;
+    }
+
+    public  void SetObject(GameObject gO){
+        mCurrentObject=gO;
 
     }
 

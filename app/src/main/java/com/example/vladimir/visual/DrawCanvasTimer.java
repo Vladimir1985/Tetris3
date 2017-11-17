@@ -40,11 +40,13 @@ public class DrawCanvasTimer extends View {
         init(context);
     }
 
-    private void init(Context context) {
+    private void init(Context context)
+    {
         gamePlane = new boolean[GameWidth][GameHeight];
     }
 
-    void CreateBitmap() {
+    void CreateBitmap()
+    {
         black = Bitmap.createBitmap(gameCubeSize, gameCubeSize, Bitmap.Config.RGB_565);
         green = Bitmap.createBitmap(gameCubeSize, gameCubeSize, Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(black);
